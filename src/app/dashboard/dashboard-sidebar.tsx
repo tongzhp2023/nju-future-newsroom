@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import type { Profile, UserDepartmentRoleWithDetails, Department } from '@/lib/types'
 import { joinDepartment } from '@/lib/actions'
 
@@ -28,6 +28,15 @@ export default function DashboardSidebar({
   const [showJoinModal, setShowJoinModal] = useState<string | null>(null)
   const [joinReason, setJoinReason] = useState('')
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    if (!showJoinModal) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setShowJoinModal(null); setJoinReason('') }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [showJoinModal])
 
   const joinedDeptIds = new Set(deptRoles.map(dr => dr.department_id))
 
@@ -59,8 +68,10 @@ export default function DashboardSidebar({
         {/* 悬浮收起/展开按钮 — 在侧边栏右边缘中间 */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute top-1/2 -translate-y-1/2 -right-3 z-30 w-6 h-10 bg-[var(--surface)] border border-[var(--border)] rounded-full shadow-sm flex items-center justify-center text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition"
+          className="absolute top-1/2 -translate-y-1/2 -right-4 z-30 w-8 h-12 bg-[var(--surface)] border border-[var(--border)] rounded-full shadow-sm flex items-center justify-center text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] transition"
           title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
         >
           <svg className={`w-3.5 h-3.5 transition-transform ${collapsed ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -109,27 +120,30 @@ export default function DashboardSidebar({
                   const isDeptActive = pathname.startsWith(`/dashboard/dept/${dept.id}`)
                   return (
                     <div key={dept.id} className="flex items-center gap-1">
-                      <Link
-                        href={isJoined ? `/dashboard/dept/${dept.id}` : '#'}
-                        onClick={e => { if (!isJoined) e.preventDefault() }}
-                        className={`flex-1 min-w-0 px-2 py-1.5 rounded-md text-[13px] truncate transition ${
-                          isDeptActive
-                            ? 'bg-[var(--sidebar-active)] text-[var(--sidebar-text-active)] font-medium'
-                            : isJoined
-                            ? 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text-active)]'
-                            : 'text-[var(--sidebar-section)] cursor-default'
-                        }`}
-                      >
-                        {dept.name}
-                      </Link>
                       {isJoined ? (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium shrink-0">
+                        <Link
+                          href={`/dashboard/dept/${dept.id}`}
+                          className={`flex-1 min-w-0 px-2 py-1.5 rounded-md text-sm truncate transition ${
+                            isDeptActive
+                              ? 'bg-[var(--sidebar-active)] text-[var(--sidebar-text-active)] font-medium'
+                              : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text-active)]'
+                          }`}
+                        >
+                          {dept.name}
+                        </Link>
+                      ) : (
+                        <span className="flex-1 min-w-0 px-2 py-1.5 text-sm truncate text-[var(--sidebar-section)]">
+                          {dept.name}
+                        </span>
+                      )}
+                      {isJoined ? (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 font-medium shrink-0">
                           已加入
                         </span>
                       ) : (
                         <button
                           onClick={() => setShowJoinModal(dept.id)}
-                          className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition font-medium shrink-0"
+                          className="text-xs px-1.5 py-0.5 rounded-full bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition font-medium shrink-0"
                         >
                           申请加入
                         </button>
@@ -144,7 +158,7 @@ export default function DashboardSidebar({
           {/* 分类标签 */}
           {!collapsed && (
             <div className="px-2.5 pt-4 pb-1.5">
-              <span className="text-[11px] font-medium text-[var(--sidebar-section)] uppercase tracking-wider">功能</span>
+              <span className="text-xs font-medium text-[var(--sidebar-section)] uppercase tracking-wider">功能</span>
             </div>
           )}
           {collapsed && <div className="my-2 mx-2 border-t border-[var(--sidebar-border)]" />}
@@ -181,7 +195,7 @@ export default function DashboardSidebar({
                     {profile?.full_name || userEmail}
                   </p>
                   {profile?.student_id && (
-                    <p className="text-[10px] text-[var(--muted)] truncate leading-tight">
+                    <p className="text-xs text-[var(--muted)] truncate leading-tight">
                       {profile.student_id}
                     </p>
                   )}
@@ -204,10 +218,10 @@ export default function DashboardSidebar({
 
       {/* 申请加入弹窗 */}
       {showJoinModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
           <div className="bg-[var(--card-bg)] rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-[var(--card-border)]">
             <div className="px-6 pt-6 pb-4">
-              <h3 className="text-base font-bold text-[var(--foreground)]">
+              <h3 id="join-modal-title" className="text-base font-bold text-[var(--foreground)]">
                 申请加入编辑部
               </h3>
               <p className="text-sm text-[var(--muted)] mt-1">
@@ -267,7 +281,7 @@ function NavItem({
   return (
     <Link
       href={href}
-      className={`nav-item flex items-center ${collapsed ? 'justify-center px-0' : 'px-2.5'} gap-2 py-2 rounded-lg text-sm transition ${
+      className={`nav-item relative flex items-center ${collapsed ? 'justify-center px-0' : 'px-2.5'} gap-2 py-2 rounded-lg text-sm transition ${
         active
           ? 'bg-[var(--sidebar-active)] text-[var(--sidebar-text-active)] font-medium'
           : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-text-active)]'
@@ -279,7 +293,7 @@ function NavItem({
       </span>
       {!collapsed && <span className="flex-1 truncate">{label}</span>}
       {badge && !collapsed && (
-        <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full px-1">
+        <span className="min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full px-1">
           {badge}
         </span>
       )}

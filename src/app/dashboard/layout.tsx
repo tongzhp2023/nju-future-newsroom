@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getProfile, getUnreadNotificationCount, getMyDepartmentRoles, getDepartments } from '@/lib/actions'
 import Link from 'next/link'
+import Image from 'next/image'
 import DashboardSidebar from './dashboard-sidebar'
 import ThemeToggle from '@/components/theme-toggle'
 import UserDropdown from '@/components/user-dropdown'
@@ -28,8 +29,8 @@ export default async function DashboardLayout({
       <header className="h-14 bg-[var(--surface)] border-b border-[var(--border)] flex items-center justify-between px-6 shrink-0 z-10">
         {/* 左侧：品牌标题 */}
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <img src="/nju-logo.png" alt="南京大学" className="w-7 h-7 object-contain" />
-          <span className="text-xl font-black text-[var(--foreground)] tracking-tight whitespace-nowrap">
+          <Image src="/nju-logo.png" alt="南京大学" width={28} height={28} className="object-contain" />
+          <span className="text-xl font-bold text-[var(--foreground)] tracking-tight whitespace-nowrap">
             南京大学未来编辑部 · 智慧课程
           </span>
         </Link>
@@ -43,6 +44,7 @@ export default async function DashboardLayout({
           <Link
             href="/dashboard/notifications"
             className="relative p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-hover)] rounded-lg transition"
+            aria-label="通知中心"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
@@ -74,7 +76,7 @@ export default async function DashboardLayout({
         />
 
         {/* 页面主内容 */}
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        <main id="main-content" className="flex-1 min-w-0 overflow-y-auto">
           {children}
         </main>
       </div>

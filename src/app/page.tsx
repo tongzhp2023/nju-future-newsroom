@@ -27,7 +27,7 @@ export default function Home() {
         >
           <Image
             src={src}
-            alt="南京大学未来编辑部"
+            alt={index === 0 ? "编辑部工作场景" : "课堂教学场景"}
             fill
             className="object-cover"
             priority={index === 0}
@@ -36,11 +36,11 @@ export default function Home() {
       ))}
 
       {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-black/70" />
 
       {/* Content */}
       <div className="relative z-10 text-center max-w-2xl px-6">
-        <h1 className="text-5xl font-bold text-white mb-4 drop-shadow-lg">
+        <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 drop-shadow-lg" style={{ fontFamily: 'var(--font-newsreader), serif' }}>
           南京大学未来编辑部
         </h1>
         <h2 className="text-xl text-white mb-3 drop-shadow-md">
@@ -67,17 +67,20 @@ export default function Home() {
       </div>
 
       {/* Image Indicators */}
-      <div className="absolute bottom-20 z-10 flex gap-2">
+      <div className="absolute bottom-20 z-10 flex gap-1">
         {heroImages.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentImage(index)}
-            className={`w-2 h-2 rounded-full transition-all ${
+            className="p-2 group"
+            aria-label={`切换到第 ${index + 1} 张图片`}
+          >
+            <span className={`block rounded-full transition-all ${
               currentImage === index
-                ? "bg-white w-6"
-                : "bg-white/50"
-            }`}
-          />
+                ? "bg-white w-6 h-2"
+                : "bg-white/50 w-2 h-2 group-hover:bg-white/70"
+            }`} />
+          </button>
         ))}
       </div>
 

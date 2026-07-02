@@ -9,10 +9,10 @@ export default async function DashboardHomePage() {
   const recentNotifications = notifications.slice(0, 5)
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
+    <div className="max-w-6xl mx-auto px-6 py-8">
       {/* 欢迎区域 */}
-      <div className="rounded-2xl px-8 py-8 mb-8 bg-gray-900 dark:bg-gray-800 text-white">
-        <h1 className="text-2xl font-bold">
+      <div className="rounded-2xl px-8 py-8 mb-8 bg-gradient-to-r from-[#1E3A5F] to-[#2d5a8a] text-white">
+        <h1 className="text-2xl md:text-3xl font-bold" style={{ fontFamily: 'var(--font-newsreader), serif' }}>
           欢迎回来，{profile?.full_name || '同学'}
         </h1>
         <p className="mt-1.5 text-sm opacity-60">
@@ -43,7 +43,7 @@ export default async function DashboardHomePage() {
                     <h3 className="text-sm font-semibold text-[var(--foreground)] group-hover:opacity-70 transition truncate">
                       {dr.department.name}
                     </h3>
-                    <span className="text-[11px] font-medium text-[var(--muted)]">
+                    <span className="text-xs font-medium text-[var(--muted)]">
                       {ROLE_LABELS[dr.role]}
                     </span>
                   </div>
@@ -90,14 +90,14 @@ export default async function DashboardHomePage() {
                 href="/dashboard/notifications"
                 className="flex items-start gap-3 px-5 py-3.5 hover:bg-[var(--surface-hover)] transition"
               >
-                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0 bg-[var(--accent)]" />
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0 bg-[var(--info)]" />
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-[var(--foreground)] truncate">{n.title}</p>
                   {n.content && (
                     <p className="text-xs text-[var(--muted)] mt-0.5 line-clamp-1">{n.content}</p>
                   )}
                 </div>
-                <span className="text-[11px] text-[var(--muted)] shrink-0 mt-0.5">
+                <span className="text-xs text-[var(--muted)] shrink-0 mt-0.5">
                   {new Date(n.created_at).toLocaleDateString('zh-CN', {
                     month: 'short',
                     day: 'numeric',

@@ -26,7 +26,9 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleDarkMode}
-      className="relative inline-flex items-center justify-center w-[52px] h-[28px] rounded-full transition-colors duration-300 focus:outline-none border border-[var(--border)]"
+      className="relative inline-flex items-center justify-center w-[52px] h-[28px] rounded-full transition-colors duration-300 border border-[var(--border)]"
+      role="switch"
+      aria-checked={darkMode}
       style={{ background: darkMode ? 'var(--surface-active)' : 'var(--surface-raised)' }}
       title={darkMode ? '切换到浅色模式' : '切换到深色模式'}
       aria-label="切换主题"
