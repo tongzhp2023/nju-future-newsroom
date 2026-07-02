@@ -58,6 +58,124 @@
 
 ## 进度记录
 
+### 2026-07-02（第十五轮）— 编辑器模块化重构 + Word 风格 UI + 工具栏全面升级
+
+**对富文本编辑器进行了全面重构**，从 635 行单文件拆分为 7 个模块化组件，升级工具栏至 40+ 按钮覆盖 Word 级别功能，重设计 UI 为 Word 风格灰底白页布局。
+
+#### 编辑器模块化重构
+
+原来 `src/components/tiptap-editor.tsx`（635 行，工具栏/图标/编辑器/扩展混在一起）拆分为：
+
+```
+src/components/tiptap/
+  index.tsx          — 主组件（useEditor + 状态管理）
+  toolbar.tsx        — 完整工具栏（40+ 按钮，分组排列）
+  bubble-menu.tsx    — 选中文字气泡菜单
+  extensions.ts      — 所有扩展集中配置
+  types.ts           — 类型 + 常量（字号/字体/行距/调色板）
+  icons.tsx          — 20+ SVG 图标组件
+  color-picker.tsx   — 70 色调色板
+```
+
+#### 工具栏升级（新增 11 项功能）
+
+| 新增功能 | 实现方式 |
+|---|---|
+| 字体族下拉（10 款中英文字体） | TextStyleKit 内置 FontFamily |
+| 行距选择（7 档） | TextStyleKit 内置 LineHeight |
+| 高亮按钮 | `@tiptap/extension-highlight`（扩展已有，缺按钮） |
+| 视频插入 | 自定义 Video 节点扩展 |
+| 附件上传 | 自定义 Attachment 节点扩展 |
+| 网页嵌入（iframe） | 自定义 Iframe 节点扩展 |
+| 标注块（Callout） | 自定义 Callout 节点（info/warning/tip/danger） |
+| 双栏布局 | 自定义 Columns + Column 节点 |
+| 查找替换 | 自定义 SearchReplace 插件 + 工具栏内联输入栏 |
+| 源码视图 | JSON 源码 ↔ 富文本切换 |
+| 气泡菜单 | 选中文字浮窗（加粗/斜体/下划线/删除线/链接/清除格式） |
+
+全部 Text Style 功能（Color/BackgroundColor/FontFamily/FontSize/LineHeight）通过 Tiptap v3 的 `TextStyleKit` 一个扩展统一提供。
+
+#### 自定义扩展（8 个新文件）
+
+```
+src/lib/tiptap-extensions/
+  video.ts            — 视频节点（支持 src/width/height）
+  iframe.ts           — 网页嵌入节点
+  attachment.ts       — 文件附件节点（下载链接卡片）
+  callout.ts          — 标注块（ℹ️/⚠️/💡/🚫 四种样式）
+  search-replace.ts   — 查找替换 ProseMirror 插件（高亮匹配+全部替换）
+  column.ts           — 双栏/多栏布局（Columns + Column 嵌套节点）
+  text-direction.ts   — 文字方向（LTR/RTL）
+```
+
+#### Word 风格 UI 重设计
+
+- **灰底白页**：外层 `bg-gray-100`，内层 `bg-white` 纸页效果（`shadow-md` + `border-gray-200`）
+- **宽度扩大**：`max-w-3xl`（768px）→ `max-w-4xl`（896px）
+- **纸页高度**：`min-h-[800px]` 保证 Word 页面感
+- **内边距**：`px-10 py-10` 适当的文字边距
+
+#### 焦点黑框修复
+
+**根因**：`globals.css:110` 的全局无障碍规则 `:focus-visible { outline: 2px solid var(--accent) }` 作用于所有元素，Tiptap 编辑器的多处 `outline-none` 无法覆盖（Tailwind 的 `outline-none` 实际设置 `outline: 2px solid transparent`，CSS 优先级低于全局选择器）。
+
+**修复**：在 `globals.css` 中新增特定选择器 `.tiptap:focus-visible, .tiptap :focus-visible, .ProseMirror:focus-visible, .ProseMirror :focus-visible { outline: none; }`，覆盖全局焦点环规则。
+
+#### 表格 CSS 补全
+
+Tiptap 生成的 `<table>` 结构此前无样式，插入表格后不可见。在 EditorContent 的 Tailwind className 中补全表格样式：
+- `border-collapse` + `w-full` + `my-4`
+- `th`：边框 + 灰底 + 内边距 + 左对齐 + 粗体
+- `td`：边框 + 内边距
+- `selectedCell`：蓝色高亮
+- Dark mode 下的边框色适配
+
+#### 依赖清理
+
+- 卸载 `reactjs-tiptap-editor`（-299 个包），消除 Excalidraw/Mermaid/Yjs/KaTeX 等不需要的重量依赖
+- 删除旧 `src/components/tiptap-editor.tsx`（635 行单文件）
+- 移除自定义 `line-height.ts`（TextStyleKit 已内置）
+
+#### 保留现有的 Word 导入/导出
+
+项目已有一套质量良好的 Word 导入导出实现：
+- 导入：`word-upload-button.tsx` + `/api/parse-doc`（XML + textutil）
+- 导出：`article-editor.tsx` 中的 `handleExportWord`（docx + file-saver）
+- 这些保留不动，不引入新版本的导入导出
+
+#### 修改文件
+
+- `src/components/tiptap/index.tsx` — **新增**，主编辑器组件
+- `src/components/tiptap/toolbar.tsx` — **新增**，完整工具栏
+- `src/components/tiptap/bubble-menu.tsx` — **新增**，气泡菜单
+- `src/components/tiptap/extensions.ts` — **新增**，扩展配置
+- `src/components/tiptap/types.ts` — **新增**，类型和常量
+- `src/components/tiptap/icons.tsx` — **新增**，SVG 图标
+- `src/components/tiptap/color-picker.tsx` — **新增**，调色板
+- `src/lib/tiptap-extensions/video.ts` — **新增**
+- `src/lib/tiptap-extensions/iframe.ts` — **新增**
+- `src/lib/tiptap-extensions/attachment.ts` — **新增**
+- `src/lib/tiptap-extensions/callout.ts` — **新增**
+- `src/lib/tiptap-extensions/search-replace.ts` — **新增**
+- `src/lib/tiptap-extensions/column.ts` — **新增**
+- `src/lib/tiptap-extensions/text-direction.ts` — **新增**
+- `src/app/globals.css` — 编辑器焦点环例外规则
+- `src/app/dashboard/dept/[deptId]/articles/[id]/edit/article-editor.tsx` — 更新导入路径
+- `package.json` — 移除 reactjs-tiptap-editor
+- `pnpm-lock.yaml` — 更新
+
+#### 技术要点
+
+- Tiptap v3 中 `BubbleMenu` 从 `@tiptap/react/menus` 导入（非 `@tiptap/react`），使用 `options` prop 替代 `tippyOptions`
+- `TextStyleKit` 一个扩展即可提供 Color/BackgroundColor/FontFamily/FontSize/LineHeight 全部功能
+- `@tiptap/extension-color` 在 v3 中实际是 `@tiptap/extension-text-style` 的 re-export
+- Tailwind `outline-none` 设置的是 `outline: 2px solid transparent`，无法覆盖 CSS 文件中 `:focus-visible` 选择器的 `outline: 2px solid var(--accent)`，必须用更具体的选择器
+- `max-w-3xl` = 768px, `max-w-4xl` = 896px, `max-w-5xl` = 1024px
+- ProseMirror 的 `ProseMirror-focused` class 在编辑器获得焦点时自动添加，可用于焦点样式定制
+- `next build` 零 TypeScript 错误，仅 `/login` 页面因 Supabase 环境变量缺失导致预渲染错误（已有问题）
+
+---
+
 ### 2026-07-02（第十四轮）— 修订模式 Bug 修复：编号优化 + 撤销同步 + IME 新段落 + 红色修订显示
 
 **修复了修订模式的四个关键 Bug**，并优化了修订编号的视觉呈现，使修订模式达到可用的生产质量。
@@ -945,12 +1063,29 @@ nju-future-newsroom/
 │   │               ├── page.tsx          #   审批流 + 选题模板
 │   │               └── workflow/         #   审批流配置
 │   ├── components/
-│   │   ├── tiptap-editor.tsx             # Tiptap 编辑器
+│   │   ├── tiptap/                       # Tiptap 模块化编辑器
+│   │   │   ├── index.tsx                 #   主组件（useEditor + 状态管理）
+│   │   │   ├── toolbar.tsx               #   完整工具栏（40+ 按钮，分组排列）
+│   │   │   ├── bubble-menu.tsx           #   选中文字气泡菜单
+│   │   │   ├── extensions.ts             #   扩展集中配置
+│   │   │   ├── types.ts                  #   类型 + 常量（字号/字体/行距/调色板）
+│   │   │   ├── icons.tsx                 #   20+ SVG 图标组件
+│   │   │   └── color-picker.tsx          #   70 色调色板
 │   │   ├── theme-toggle.tsx              # Light/Dark 主题切换滑块
 │   │   └── user-dropdown.tsx             # 用户头像下拉框（个人中心+退出登录）
 │   ├── lib/
 │   │   ├── types.ts                      # 类型定义（5角色 + 13字段报题单）
 │   │   ├── actions.ts                    # Server Actions（~1100行）
+│   │   ├── tiptap-extensions/
+│   │   │   ├── track-changes.ts          #   修订模式（Track Changes）
+│   │   │   ├── indent.ts                 #   缩进扩展
+│   │   │   ├── video.ts                  #   视频节点
+│   │   │   ├── iframe.ts                 #   网页嵌入节点
+│   │   │   ├── attachment.ts             #   文件附件节点
+│   │   │   ├── callout.ts                #   标注块（提示/警告/技巧/危险）
+│   │   │   ├── search-replace.ts         #   查找替换插件
+│   │   │   ├── column.ts                 #   双栏/多栏布局
+│   │   │   └── text-direction.ts         #   文字方向（LTR/RTL）
 │   │   └── supabase/
 │   │       ├── client.ts                 # 浏览器端
 │   │       └── server.ts                 # 服务端

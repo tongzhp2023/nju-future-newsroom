@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import NextLink from 'next/link'
-import TiptapEditor from '@/components/tiptap-editor'
+import TiptapEditor from '@/components/tiptap'
 import WordUploadButton from '@/components/word-upload-button'
 import CommentsPanel from './comments-panel'
 import {
