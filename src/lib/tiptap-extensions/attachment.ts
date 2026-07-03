@@ -3,7 +3,7 @@ import { Node } from '@tiptap/core'
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     attachment: {
-      setAttachment: (options: { name: string; url: string; size?: string; type?: string }) => ReturnType
+      setAttachment: (options: { name: string; url: string; size?: string; fileType?: string }) => ReturnType
     }
   }
 }

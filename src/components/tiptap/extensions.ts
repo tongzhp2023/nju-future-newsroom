@@ -13,25 +13,20 @@ import { Table } from '@tiptap/extension-table'
 import TableRow from '@tiptap/extension-table-row'
 import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
+import BulletList from '@tiptap/extension-bullet-list'
+import OrderedList from '@tiptap/extension-ordered-list'
+import ListItem from '@tiptap/extension-list-item'
 import { TextStyleKit } from '@tiptap/extension-text-style'
-
+import { PageBreak, Pagination } from 'tiptap-community-pages'
 import { Indent } from '@/lib/tiptap-extensions/indent'
-import { Video } from '@/lib/tiptap-extensions/video'
-import { Iframe } from '@/lib/tiptap-extensions/iframe'
 import { Attachment } from '@/lib/tiptap-extensions/attachment'
 import { Callout } from '@/lib/tiptap-extensions/callout'
 import { SearchReplace } from '@/lib/tiptap-extensions/search-replace'
 import { Columns, Column } from '@/lib/tiptap-extensions/column'
-import { TextDirection } from '@/lib/tiptap-extensions/text-direction'
 import {
-  TrackInsert,
-  TrackDelete,
-  TrackChanges,
-  CommentMark,
+  TrackInsert, TrackDelete, TrackChanges, CommentMark,
 } from '@/lib/tiptap-extensions/track-changes'
 import type { AnyExtension } from '@tiptap/core'
-
-// TextStyleKit already bundles: TextStyle, Color, BackgroundColor, FontFamily, FontSize, LineHeight
 
 interface ExtensionsConfig {
   trackChangesEnabled: boolean
@@ -42,7 +37,17 @@ export function getExtensions({ trackChangesEnabled, authorName }: ExtensionsCon
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3, 4, 5, 6] },
+      link: false,
+      underline: false,
+      // 禁用 StarterKit 内置的 bulletList/orderedList，使用显式导入的版本
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
     }),
+    // 显式注册列表扩展，确保正确加载
+    BulletList,
+    OrderedList,
+    ListItem,
     Placeholder.configure({ placeholder: '开始撰写您的稿件...' }),
     Underline,
     Link.configure({
@@ -62,17 +67,23 @@ export function getExtensions({ trackChangesEnabled, authorName }: ExtensionsCon
     TableRow,
     TableCell,
     TableHeader,
-    // TextStyleKit bundles: TextStyle, Color, BackgroundColor, FontFamily, FontSize, LineHeight
     TextStyleKit,
     Indent,
-    Video,
-    Iframe,
     Attachment,
     Callout,
     Columns,
     Column,
-    TextDirection,
     SearchReplace,
+    // A4 分页
+    PageBreak,
+    Pagination.configure({
+      pageFormat: 'A4',
+      orientation: 'portrait',
+      margins: { top: 96, bottom: 96, left: 96, right: 96 },
+      pageGap: 40,
+      showPageNumbers: false,
+    }),
+    // 修订模式
     TrackInsert,
     TrackDelete,
     CommentMark,

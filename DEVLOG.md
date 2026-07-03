@@ -58,6 +58,131 @@
 
 ## 进度记录
 
+### 2026-07-03（第十六轮）— A4 分页 + 格式刷修复 + 字体扩充 + 段落面板 + 表格右键菜单 + 气泡工具栏重设计
+
+**系统性修复了用户反馈的全部 9 项问题**，引入社区分页扩展实现 A4 自动分页，重写了格式刷、段落面板、表格菜单和气泡工具栏。
+
+#### A4 分页（tiptap-community-pages）
+
+安装社区免费分页扩展 `tiptap-community-pages`（MIT 协议），替换此前的静态 A4 div 方案：
+
+- `Pagination` 扩展：自动计算内容高度并插入分页符，内容跨页流动
+- `PageBreak` 扩展：`Ctrl+Enter` 手动分页
+- `<PageWrapper>` React 组件：渲染 A4 纸页视觉效果（794×1123px，灰底间隙，阴影）
+- 页边距按钮通过 `editor.commands.setMargins()` 动态切换 4 种预设
+- `globals.css` 添加 `tiptap-community-pages/styles.css` 引入
+
+#### 格式刷重写（mousedown → mouseup 架构）
+
+旧方案使用 `onSelectionUpdate` 事件响应选区变化，无法正确处理拖拽选择。新方案：
+
+- 在 `editorProps.handleDOMEvents.mouseup` 中检测选区并应用格式
+- `requestAnimationFrame` 延迟确保 ProseMirror 先更新选区
+- 双击格式刷按钮 → 锁定模式（对应状态 `formatPainterLocked`）
+- 再次单击格式刷按钮（toggle）或按 ESC → 随时取消
+- `painterRef` 跨渲染周期保持格式刷状态，避免闭包过期
+
+#### 字体库扩充（25 款）
+
+扫描 5 个字体目录提取可用字体文件：
+- WPS 自带：`FangS-SC.ttf`（仿宋）、`HYKaiTiJ.ttf`（汉仪楷体）、`HYQiHei-55J.ttf`（汉仪旗黑）、`HYZhongJianHeiJ.ttf`（汉仪中简黑）、`ShuS-SC.ttf`（书宋）
+- 系统字体：`Songti.ttc`（宋体）、`STHeiti`（华文黑体）、`Hiragino Sans GB`（冬青黑体）
+- 西文：Arial, Times New Roman, Georgia, Verdana, Courier New, Tahoma, Trebuchet MS, Impact, Comic Sans MS, Helvetica, Futura, Gill Sans, Didot, Baskerville, Palatino, Copperplate
+
+全部配置完整的 CSS font-family fallback 链。
+
+#### 段落面板重设计
+
+将原来的行距下拉扩展为 5 区完整段落面板（参考 Word 段落对话框）：
+
+| 区 | 功能 | 单位 |
+|---|---|---|
+| 行距 | 单倍/1.5/2.0/2.5/3.0 按钮组 | — |
+| 段前间距 | 0/0.5/1/1.5/2/2.5/3 按钮组 | 行 |
+| 段后间距 | 0/0.5/1/1.5/2/2.5/3 按钮组 | 行 |
+| 首行缩进 | 0/0.5/1/1.5/2 按钮组 | 字符 |
+| 左右缩进 | 减少/增加两个按钮 | — |
+
+通过 `editor.chain().focus().updateAttributes('paragraph', { marginTop: '2em' })` 直接修改段落属性。
+
+#### 无序/有序列表修复
+
+根因：StarterKit 中默认启用的列表扩展与其他扩展冲突。修复方案：
+- 安装独立包 `@tiptap/extension-bullet-list`、`@tiptap/extension-ordered-list`、`@tiptap/extension-list-item`
+- 在 StarterKit 中显式禁用列表（`bulletList: false, orderedList: false, listItem: false`）
+- 单独注册以确保正确的加载顺序
+
+#### 任务列表 CSS 修复
+
+Tiptap taskItem DOM 结构为 `<li data-type="taskItem"><label><input/><span/></label><div><p/></div></li>`。修复 CSS：
+- `li[data-type=taskItem]` → `!flex !items-start gap-2`
+- `label` → `!inline-flex !items-center`
+- `div`（内容容器）→ `!flex-1`
+
+#### 表格右键菜单
+
+替换悬浮气泡菜单为原生右键响应：
+- `handleDOMEvents.contextmenu` 检测点击位置是否在表格内
+- `TextSelection.near()` 聚焦到表格内位置
+- 固定定位 `<div>` 渲染右键菜单，包含 11 个操作项（分隔线分组）
+- 点击空白处（`handleClick`）或 ESC 关闭
+
+表格列宽拖拽通过 `Table.configure({ resizable: true })` 已内置支持。
+
+#### 气泡工具栏重设计
+
+**上气泡栏**（选中文字浮现）新增：格式刷、清除格式、字号下拉（五号-六号）、字体下拉（前10款）、文字颜色(70色)、背景色(70色)、高亮、上标/下标。删除行内代码。保留 B/I/S/U、链接。
+
+**下气泡栏**（内联批注浮窗）删除超链接按钮，仅保留批注（注¹）和字数显示。
+
+#### 独立缩进按钮删除
+
+工具栏中独立的减少缩进/增加缩进按钮移除，功能移入段落面板「左右缩进」区域。
+
+#### 已删除的功能（汇总）
+
+视频、iframe 嵌入网页、引用块、文字方向、源码视图、独立缩进/反缩进按钮 — 共 6 项。
+
+#### 新增依赖
+
+- `tiptap-community-pages` — A4 分页（MIT）
+- `@tiptap/extension-bullet-list` — 无序列表
+- `@tiptap/extension-ordered-list` — 有序列表
+- `@tiptap/extension-list-item` — 列表项
+
+#### 新增文件
+
+- `src/components/tiptap/table-bubble-menu.tsx` — 表格右键菜单组件
+
+#### 删除文件
+
+- `src/lib/tiptap-extensions/video.ts`
+- `src/lib/tiptap-extensions/iframe.ts`
+- `src/lib/tiptap-extensions/text-direction.ts`
+
+#### 修改文件
+
+- `src/components/tiptap/types.ts` — 字体库扩充（25款）+ 段前段后/首行缩进常量 + 页边距像素值
+- `src/components/tiptap/icons.tsx` — 新增 EraserIcon/ParagraphIcon/MarginIcon
+- `src/components/tiptap/extensions.ts` — Pagination/PageBreak 注册 + 列表显式注册
+- `src/components/tiptap/index.tsx` — PageWrapper 集成 + mouseup 格式刷 + 右键菜单 + 页边距命令
+- `src/components/tiptap/toolbar.tsx` — 段落面板重设计 + 字体列表扩充 + 删除缩进按钮
+- `src/components/tiptap/bubble-menu.tsx` — 上气泡栏 15 工具 + 下气泡栏精简
+- `src/app/globals.css` — 任务列表 CSS 修复
+- `src/lib/tiptap-extensions/attachment.ts` — `type` → `fileType` 类型修正
+- `package.json` — +4 依赖
+
+#### 技术要点
+
+- `tiptap-community-pages` 的 `PageWrapper` 和 `Pagination` 扩展需要 margin 配置一致：`PageWrapper` 负责视觉渲染，`Pagination` 负责内容分页计算
+- ProseMirror `handleDOMEvents.mouseup` 在 `handleDOMEvents.click` 之后触发，适合格式刷"选完再刷"的交互模式
+- `TextSelection.near($pos)` 创建离指定位置最近的合法文本选区，避免表格节点内选区越界
+- 段落间距通过 `updateAttributes('paragraph', { marginTop: '2em' })` 实现，`em` 单位相对于当前段落字号
+- `onSelectionUpdate` 中检测 contenteditable 区域变化时，`closest('.ctp-pages-breaks')` 替代 `.editor-scroll-area` 以适配分页 DOM 结构
+- `next build` 零 TypeScript 错误
+
+---
+
 ### 2026-07-02（第十五轮）— 编辑器模块化重构 + Word 风格 UI + 工具栏全面升级
 
 **对富文本编辑器进行了全面重构**，从 635 行单文件拆分为 7 个模块化组件，升级工具栏至 40+ 按钮覆盖 Word 级别功能，重设计 UI 为 Word 风格灰底白页布局。
@@ -1064,11 +1189,12 @@ nju-future-newsroom/
 │   │               └── workflow/         #   审批流配置
 │   ├── components/
 │   │   ├── tiptap/                       # Tiptap 模块化编辑器
-│   │   │   ├── index.tsx                 #   主组件（useEditor + 状态管理）
-│   │   │   ├── toolbar.tsx               #   完整工具栏（40+ 按钮，分组排列）
-│   │   │   ├── bubble-menu.tsx           #   选中文字气泡菜单
-│   │   │   ├── extensions.ts             #   扩展集中配置
-│   │   │   ├── types.ts                  #   类型 + 常量（字号/字体/行距/调色板）
+│   │   │   ├── index.tsx                 #   主组件（useEditor + PageWrapper + 格式刷）
+│   │   │   ├── toolbar.tsx               #   单行工具栏（30+ 按钮 + 段落面板）
+│   │   │   ├── bubble-menu.tsx           #   上气泡栏（15 工具）+ 下批注栏
+│   │   │   ├── table-bubble-menu.tsx     #   表格右键菜单（11 操作项）
+│   │   │   ├── extensions.ts             #   扩展集中配置（含 A4 分页）
+│   │   │   ├── types.ts                  #   类型 + 常量（25 字体/中文字号/段落间距）
 │   │   │   ├── icons.tsx                 #   20+ SVG 图标组件
 │   │   │   └── color-picker.tsx          #   70 色调色板
 │   │   ├── theme-toggle.tsx              # Light/Dark 主题切换滑块
@@ -1079,13 +1205,10 @@ nju-future-newsroom/
 │   │   ├── tiptap-extensions/
 │   │   │   ├── track-changes.ts          #   修订模式（Track Changes）
 │   │   │   ├── indent.ts                 #   缩进扩展
-│   │   │   ├── video.ts                  #   视频节点
-│   │   │   ├── iframe.ts                 #   网页嵌入节点
 │   │   │   ├── attachment.ts             #   文件附件节点
 │   │   │   ├── callout.ts                #   标注块（提示/警告/技巧/危险）
 │   │   │   ├── search-replace.ts         #   查找替换插件
-│   │   │   ├── column.ts                 #   双栏/多栏布局
-│   │   │   └── text-direction.ts         #   文字方向（LTR/RTL）
+│   │   │   └── column.ts                 #   双栏/多栏布局
 │   │   └── supabase/
 │   │       ├── client.ts                 # 浏览器端
 │   │       └── server.ts                 # 服务端

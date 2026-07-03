@@ -15,14 +15,19 @@ export function RedoIcon() {
 }
 
 export function FormatPainterIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-    <path d="M5 3h14v4H5z" /><path d="M8 7v3h3v11h2V10h3V7" />
+  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <rect x="3" y="3" width="14" height="6" rx="1" />
+    <path d="M10 9v12h4V9" />
+    <path d="M3 6h14" />
+    <path d="M7 3v3" />
   </svg>
 }
 
-export function ClearFormatIcon() {
+export function EraserIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <path d="M6 4h12M10 4v6M14 4v3" /><path d="M4 20l16-16" strokeLinecap="round" />
+    <path d="M20 20H7L3 16c-.8-.8-.8-2 0-2.8L14.6 1.6c.8-.8 2-.8 2.8 0L21 5.2c.8.8.8 2 0 2.8L12 17" />
+    <line x1="6" y1="20" x2="10" y2="20" />
+    <line x1="18" y1="8" x2="14" y2="4" />
   </svg>
 }
 
@@ -101,28 +106,9 @@ export function MoreIcon() {
   </svg>
 }
 
-export function QuoteIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M6 17h3l2-4V7H5v6h3l-2 4zm8 0h3l2-4V7h-6v6h3l-2 4z" />
-  </svg>
-}
-
 export function HrIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
     <line x1="3" y1="12" x2="21" y2="12" strokeDasharray="4 2" />
-  </svg>
-}
-
-export function VideoIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <rect x="2" y="4" width="16" height="16" rx="2" /><polygon points="22,7 18,10 18,14 22,17" />
-  </svg>
-}
-
-export function IframeIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="8" y1="6" x2="8" y2="18" />
-    <line x1="12" y1="8" x2="16" y2="8" /><line x1="12" y1="12" x2="16" y2="12" /><line x1="12" y1="16" x2="14" y2="16" />
   </svg>
 }
 
@@ -145,32 +131,27 @@ export function SearchIcon() {
   </svg>
 }
 
-export function CodeViewIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <path d="M8 6l-6 6 6 6M16 6l6 6-6 6" />
-  </svg>
-}
-
-export function DrawerIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <rect x="3" y="3" width="8" height="18" rx="1" /><rect x="13" y="3" width="8" height="18" rx="1" />
-  </svg>
-}
-
 export function ColumnIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
     <rect x="3" y="3" width="8" height="18" rx="1" /><rect x="13" y="3" width="8" height="18" rx="1" />
   </svg>
 }
 
-export function TextDirectionIcon() {
-  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-    <path d="M4 6h10M4 12h7M4 18h9" /><path d="M18 12l2-2 2 2M20 10v8" />
-  </svg>
-}
-
 export function MentionIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
     <circle cx="12" cy="12" r="5" /><path d="M17 7.5A8 8 0 1012 20c2.5 0 4-1.5 4-4v-1" />
+  </svg>
+}
+
+export function ParagraphIcon() {
+  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <path d="M13 4v16M17 4v16M4 8h6a4 4 0 010 8H4" />
+  </svg>
+}
+
+export function MarginIcon() {
+  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <rect x="6" y="6" width="12" height="12" rx="1" strokeDasharray="3 2" />
   </svg>
 }
